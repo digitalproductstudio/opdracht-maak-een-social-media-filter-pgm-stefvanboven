@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AR Filters</title>
+
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-aframe.prod.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const filters = ["glasses1", "mask", "cyberMask"];
+            let activeFilter = null;
+
+            const changeBackground = (filter) => {
+                const body = document.body;
+                const backgrounds = {
+                    "glasses1": "radial-gradient(circle, #ff00ff 10%, #0000ff 90%)",
+                    "mask": "radial-gradient(circle, #00ffff 10%, #ff0000 90%)",
+                    "cyberMask": "radial-gradient(circle, #00ff00 10%, #0000ff 90%)"
+                };
+                body.style.background = backgrounds[filter] || "black";
+                body.style.transition = "background 0.5s ease-in-out";
+            };
+
+            filters.forEach((filter) => {
+                const button = document.querySelector("#" + filter);
+                if (!button) return; // Veiligheidscheck
+
+                const entities = document.querySelectorAll("." + filter + "-entity");
+
+                button.addEventListener("click", () => {
+                    if (activeFilter !== filter) {
+                        filters.forEach((f) => {
+                            document.querySelectorAll("." + f + "-entity").forEach(e => {
+                                e.setAttribute("visible", false);
+                                e.removeAttribute("animation");
+                            });
+                            document.querySelector("#" + f)?.classList.remove("active");
+                        });
+
+                        entities.forEach((entity) => {
+                            entity.setAttribute("visible", true);
+                            entity.setAttribute("animation", "property: opacity; to: 1; dur: 300; easing: easeInOutQuad");
+                        });
+
+                        activeFilter = filter;
+                        button.classList.add("active");
+                        changeBackground(filter);
+                    }
+                });
+            });
+
+            // 📸 Screenshot functionaliteit
+            document.getElementById("screenshotButton").addEventListener("click", function () {
+                let scene = document.querySelector("a-scene");
+                let video = document.querySelector("video");
+                let canvas = document.createElement("canvas");
+                let ctx = canvas.getContext("2d");
+
+                if (!video || !scene) return; // Veiligheidscheck
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                ctx.save();
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+                ctx.restore();
+
+                scene.renderer.preserveDrawingBuffer = true;
+
+                requestAnimationFrame(() => {
+                    let arCanvas = scene.renderer.domElement;
+                    ctx.drawImage(arCanvas, 0, 0, canvas.width, canvas.height);
+
+                    let imgData = canvas.toDataURL("image/png");
+                    let downloadLink = document.createElement("a");
+                    downloadLink.href = imgData;
+                    downloadLink.download = "AR_Snapshot.png";
+                    downloadLink.click();
+                });
+            });
+        });
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            transition: background 0.5s ease-in-out;
+        }
+
+        .example-container {
+            overflow: hidden;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .options-panel {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-button {
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid cyan;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            text-shadow: 0px 0px 5px cyan;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .filter-button:hover {
+            background: cyan;
+            color: black;
+        }
+
+        .filter-button.active {
+            background: #ff00ff;
+            color: white;
+            border-color: #ff00ff;
+            text-shadow: 0px 0px 10px #ff00ff;
+        }
+
+        .screenshot-button {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: red;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 3;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .screenshot-button:hover {
+            background: darkred;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="example-container">
+        <div class="options-panel">
+            <button class="filter-button" id="glasses1">Neon Glass</button>
+            <button class="filter-button" id="mask">Neon Mask</button>
+            <button class="filter-button" id="cyberMask">Cyber Mask</button>
+        </div>
+
+        <button id="screenshotButton" class="screenshot-button">📸 Screenshot</button>
+
+        <a-scene mindar-face embedded color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights"
+            vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+            <a-assets>
+                <a-asset-item id="glassesModel" src="assets/gltf/gltf-neon-party-glasses/scene.gltf"></a-asset-item>
+                <a-asset-item id="maskModel" src="assets/gltf/gltf-neon-mask/scene.gltf"></a-asset-item>
+                <a-asset-item id="cyberMaskModel" src="assets/gltf/gltf-cyber-mask/scene.gltf"></a-asset-item>
+            </a-assets>
+            <a-camera active="false" position="0 0 0"></a-camera>
+
+            <a-entity mindar-face-target="anchorIndex: 168">
+                <a-gltf-model position="0 0 0" scale="0.0029 0.0029 0.0029" src="#glassesModel" class="glasses1-entity"
+                    visible="false"></a-gltf-model>
+            </a-entity>
+
+            <a-entity mindar-face-target="anchorIndex: 15">
+                <a-gltf-model position="0 0 0" scale="0.002 0.002 0.002" src="#maskModel" class="mask-entity"
+                    visible="false"></a-gltf-model>
+            </a-entity>
+
+            <a-entity mindar-face-target="anchorIndex: 168">
+                <a-gltf-model position="0 0.002 0.13" scale="0.0013 0.0013 0.0013" src="#cyberMaskModel"
+                    class="cyberMask-entity" visible="false"></a-gltf-model>
+            </a-entity>
+        </a-scene>
+    </div>
+</body>
+
+</html>

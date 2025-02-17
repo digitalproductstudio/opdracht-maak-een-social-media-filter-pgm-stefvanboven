@@ -1,0 +1,11 @@
+Model Information:
+* title:	Neon Mask
+* source:	https://sketchfab.com/3d-models/neon-mask-48241ae479704a4a8c0c224b3ec293f1
+* author:	Jemaima (https://sketchfab.com/Jemaima)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Neon Mask" (https://sketchfab.com/3d-models/neon-mask-48241ae479704a4a8c0c224b3ec293f1) by Jemaima (https://sketchfab.com/Jemaima) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
