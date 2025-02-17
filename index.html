@@ -13,21 +13,11 @@
         document.addEventListener("DOMContentLoaded", function () {
             const filters = ["glasses1", "mask", "cyberMask"];
             let activeFilter = null;
-
-            const changeBackground = (filter) => {
-                const body = document.body;
-                const backgrounds = {
-                    "glasses1": "radial-gradient(circle, #ff00ff 10%, #0000ff 90%)",
-                    "mask": "radial-gradient(circle, #00ffff 10%, #ff0000 90%)",
-                    "cyberMask": "radial-gradient(circle, #00ff00 10%, #0000ff 90%)"
-                };
-                body.style.background = backgrounds[filter] || "black";
-                body.style.transition = "background 0.5s ease-in-out";
-            };
+            const audio = new Audio("assets/audio/cyberpunk-music.mp3");
 
             filters.forEach((filter) => {
                 const button = document.querySelector("#" + filter);
-                if (!button) return; // Veiligheidscheck
+                if (!button) return;
 
                 const entities = document.querySelectorAll("." + filter + "-entity");
 
@@ -36,31 +26,38 @@
                         filters.forEach((f) => {
                             document.querySelectorAll("." + f + "-entity").forEach(e => {
                                 e.setAttribute("visible", false);
-                                e.removeAttribute("animation");
                             });
                             document.querySelector("#" + f)?.classList.remove("active");
                         });
 
                         entities.forEach((entity) => {
                             entity.setAttribute("visible", true);
-                            entity.setAttribute("animation", "property: opacity; to: 1; dur: 300; easing: easeInOutQuad");
+
+                            if (filter === "glasses1") {
+                                audio.play();
+                            } else {
+                                audio.pause();
+                                audio.currentTime = 0;
+                            }
+
+                            if (filter === "mask" || filter === "cyberMask") {
+                                entity.setAttribute("animation", "property: scale; from: 0.002 0.002 0.002; to: 0.0025 0.0025 0.0025; dur: 1000; dir: alternate; loop: true");
+                            }
                         });
 
                         activeFilter = filter;
                         button.classList.add("active");
-                        changeBackground(filter);
                     }
                 });
             });
 
-            // 📸 Screenshot functionaliteit
             document.getElementById("screenshotButton").addEventListener("click", function () {
                 let scene = document.querySelector("a-scene");
                 let video = document.querySelector("video");
                 let canvas = document.createElement("canvas");
                 let ctx = canvas.getContext("2d");
 
-                if (!video || !scene) return; // Veiligheidscheck
+                if (!video || !scene) return;
 
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
@@ -89,7 +86,6 @@
     <style>
         body {
             margin: 0;
-            transition: background 0.5s ease-in-out;
         }
 
         .example-container {
@@ -172,6 +168,7 @@
                 <a-asset-item id="glassesModel" src="assets/gltf/gltf-neon-party-glasses/scene.gltf"></a-asset-item>
                 <a-asset-item id="maskModel" src="assets/gltf/gltf-neon-mask/scene.gltf"></a-asset-item>
                 <a-asset-item id="cyberMaskModel" src="assets/gltf/gltf-cyber-mask/scene.gltf"></a-asset-item>
+                <audio id="cyberpunkAudio" src="assets/audio/cyberpunk-music.mp3"></audio>
             </a-assets>
             <a-camera active="false" position="0 0 0"></a-camera>
 
@@ -181,12 +178,12 @@
             </a-entity>
 
             <a-entity mindar-face-target="anchorIndex: 15">
-                <a-gltf-model position="0 0 0" scale="0.002 0.002 0.002" src="#maskModel" class="mask-entity"
+                <a-gltf-model position="0 0 0" src="#maskModel" scale="0.002 0.002 0.002" class="mask-entity"
                     visible="false"></a-gltf-model>
             </a-entity>
 
             <a-entity mindar-face-target="anchorIndex: 168">
-                <a-gltf-model position="0 0.002 0.13" scale="0.0013 0.0013 0.0013" src="#cyberMaskModel"
+                <a-gltf-model position="0 0.002 0.13" src="#cyberMaskModel" scale="0.002 0.002 0.002"
                     class="cyberMask-entity" visible="false"></a-gltf-model>
             </a-entity>
         </a-scene>
